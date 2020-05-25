@@ -1,0 +1,119 @@
+ppt 목차
+
+0. 조원소개
+김민회 남승지 신예진 오태환 조민주 주일찬
+
+1. 도입(데이터 설명)
+- 항목64개, 파산/유지 어쩌구, NA(?) 몇개있다..
+- 종속변수가 파산여부(0,1), 독립변수가 64개,,
+
+<Preprocessing>
+2. 항목 줄이기
+- correlation이 높은 변수 제거(0.7): 28개 남음
+X1 net profit / total assets
+X5 [(cash + short-term securities + receivables - short-term liabilities) / (operating expenses - depreciation)] * 365
+X6 retained earnings / total assets
+X9 sales / total assets
+X10 equity / total assets
+X15 (total liabilities * 365) / (gross profit + depreciation)
+X17 total assets / total liabilities
+X18 gross profit / total assets
+X19 gross profit / sales
+X20 (inventory * 365) / sales
+X21 sales (n) / sales (n-1)
+X26 (net profit + depreciation) / total liabilities
+X27 profit on operating activities / financial expenses
+X29 logarithm of total assets
+X41 total liabilities / ((profit on operating activities + depreciation) * (12/365))
+X42 profit on operating activities / sales
+X45 net profit / inventory
+X46 (current assets - inventory) / short-term liabilities
+X47 (inventory * 365) / cost of products sold
+X54 constant capital / fixed assets
+X55 working capital
+X57 (current assets - inventory - short-term liabilities) / (sales - gross profit - depreciation)
+X59 long-term liabilities / equity
+X60 sales / inventory
+X61 sales / receivables
+X63 sales / short-term liabilities
+X64 sales / fixed assets
+- 몇 개 예시로(plot이랑 구성)
+
+3. NA Imputation
+- NA가 자료의 50% 이상인 항목 37번 제거
+- NA Imputation 방법
+: R mice 패키지를 사용해 pmm(predictive mean matching)
+- Imputation 후 correlation이 갑자기 높아진 항목들(이 중 0.9보다 corr 높아진 9&63 제거)
+17&46: 0.8149136
+54&64: 0.7010404
+9&63: 0.9309192
+  => 이 부분 깜빡하고 ppt에 못 넣음,, 수정하기
+- MICE 패키지는 MI(multipe imputation) 방식으로 미싱 데이터를 채워넣는 방식이다. Monte Carlo 방법을 통해 채워놓은 n개의 complete dataset을 만들고 그 결과를 합쳐 최종 결과물을 내놓는다. 
+- 총 4단계가 반복됨을 설명해주기
+
+
+4. Skewed된 자료 처리
+- 64개 변수 살펴봤는데 거의 다 skewed to the left 더라
+- 그래서 그냥 전체에 log transformation 해줬다
+- 했더니 많이 좋아졌다.
+
+5. Scaling
+- MinMaxScaler 이용
+모든 feature가 0과 1사이에 위치
+모든 데이터는 x축의 0과 1 사이에, y축의 0과 1사이에 위치
+
+6. Outlier 제거
+- outlier의 제거는 곧 데이터의 제거, 최대한 덜 삭제하자.
+- outlier가 공통적인 data 조사
+- outlier 기준: 각 변수에서 가장 작은/큰 값 3개
+- 세 개 이상의 X항목에서 outlier를 가지는 회사 총 10개(class 모두 0)
+(R기준 표기)
+6818 is in : 
+['Attr17', 'Attr18', 'Attr29', 'Attr42', 'Attr46', 'Attr47']
+1594 is in : 
+['Attr21', 'Attr42', 'Attr61', 'Attr63', 'Attr64']
+2100 is in : 
+['Attr17', 'Attr19', 'Attr26', 'Attr46']
+4680 is in : 
+['Attr17', 'Attr26', 'Attr46', 'Attr63']
+4995 is in : 
+['Attr18', 'Attr29', 'Attr60', 'Attr63']
+2556 is in : 
+['Attr19', 'Attr42', 'Attr60']
+4120 is in : 
+['Attr5', 'Attr45', 'Attr60']
+5305 is in : 
+['Attr19', 'Attr21', 'Attr45']
+5936 is in : 
+['Attr10', 'Attr19', 'Attr42']
+5811 is in : 
+['Attr19', 'Attr26', 'Attr42']
+- X항목에서 0으로 outlier가 되는 회사 데이터 제거
+Attr5 : [999], Attr6 : [3134], Attr15 : [3528], Attr19 : [2556], Attr26 : [2655], Attr41 : [6425], Attr42 [2556], Attr45 [6233], Attr54 [4942], Attr55 [4612], Attr57 [1935], Attr59 [2064]
+- 총 20개의 회사 데이터 제거
+999,3134,3528,2556,2655,6425,6233,4942,4612,1935,2064,6818,1594,2100,4680,4995,4120,5305,5936,5811
+
+7. 
+다시 Scaling
+
+
+<2. Feature extraction>
+침대개수/가구, 구성원수/가구
+8.
+- X1 & X17 (ROI)
+ROI(Return on investment): a profitability measure
+한 회사의 수익성을 판단하는 지표
+방법: dividing net income(=net profit) by total liabilities
+->이게 ROI의 정의는 아니고, ROI를 계산하는 다양한 방법이 있는데 그중 하나라고 합니다!
+X1=net profit/total assets
+X17=total assets/total liabilities
+X1 * X17 = net profit/total liabilities
+(진행중)
+
+<3. Visualization>
+
+
+
+<4. 결론>
+다음주 과정 진행사항 설명해주기
+: 마지막에 만들어진 데이터를 바탕으로 Prototype Model(logistic regression, random forest, xgboost 사용)을 만들어봤는데 Catboost에서 AUROC, F1 score가 가장 높게 나왔다. 하지만 AUROC가 대략 0.69로 아직 만족할 수준이 아니라 좀 더 향상된 모델을 만들 예정이다. 그 방법으로 PCA, FA, 파생변수 추가 등을 계획하고 있다.
